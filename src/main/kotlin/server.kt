@@ -8,7 +8,7 @@ import io.ktor.server.netty.*
 import kotlinx.serialization.json.Json
 
 fun main() {
-    embeddedServer(Netty, port = 8080, host = "127.0.0.1") {
+    embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
         install(ContentNegotiation) {
             json(Json {
                 isLenient = true
