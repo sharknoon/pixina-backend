@@ -26,7 +26,7 @@ jobs:
       - name: Remove existing Container
         uses: garygrossgarten/github-action-ssh@release
         with:
-          command: sudo docker stop pixina-backend; sudo docker rm pixina-backend; sudo docker rmi ghcr.io/sharknoon/pixina-backend
+          command: sudo docker stop pixina-backend || true; sudo docker rm pixina-backend || true; sudo docker rmi ghcr.io/sharknoon/pixina-backend || true
           host: ${{ secrets.SERVER_HOST }}
           port: ${{ secrets.SERVER_PORT }}
           username: ${{ secrets.SERVER_USER }}
