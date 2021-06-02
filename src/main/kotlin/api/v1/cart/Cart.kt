@@ -8,6 +8,9 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.util.pipeline.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
 suspend fun add(context: PipelineContext<Unit, ApplicationCall>) {
@@ -33,27 +36,31 @@ suspend fun add(context: PipelineContext<Unit, ApplicationCall>) {
             context.call.respond(HttpStatusCode.OK)
         }
         .onFailure {
-            context.call.respond(HttpStatusCode.InternalServerError, it)
+            context.call.respond(HttpStatusCode.InternalServerError, it.toString())
         }
 }
 
-private suspend fun callPixelhobbyShop(cartId: String, articles: List<Article>): Result<Unit> {
-    val client = HttpClient(CIO)
-    articles.forEach {
-        val json = Json { encodeDefaults = true }.encodeToString(Article.serializer(), it)
-        try {
-            client.post<String>("https://pixelhobby-shop.de/cart/add.js") {
-                headers {
-                    append(HttpHeaders.Cookie, "cart=$cartId")
-                    append(HttpHeaders.ContentType, "application/json")
-                    append(HttpHeaders.Host, "pixelhobby-shop.de")
-                    append(HttpHeaders.UserAgent, "PixinaBackend")
+private fun callPixelhobbyShop(cartId: String, articles: List<Article>): Result<Unit> {
+    return runBlocking {
+        val client = HttpClient(CIO)
+        articles.forEach {
+            val json = Json { encodeDefaults = true }.encodeToString(Article.serializer(), it)
+            try {
+                withContext(Dispatchers.Default) {
+                    client.post<String>("https://pixelhobby-shop.de/cart/add.js") {
+                        headers {
+                            append(HttpHeaders.Cookie, "cart=$cartId")
+                            append(HttpHeaders.ContentType, "application/json")
+                            append(HttpHeaders.Host, "pixelhobby-shop.de")
+                            append(HttpHeaders.UserAgent, "PixinaBackend")
+                        }
+                        body = json
+                    }
                 }
-                body = json
+            } catch (e: Exception) {
+                return@runBlocking Result.failure(e)
             }
-        } catch (e: Exception) {
-            return Result.failure(e)
         }
+        Result.success(Unit)
     }
-    return Result.success(Unit)
 }
