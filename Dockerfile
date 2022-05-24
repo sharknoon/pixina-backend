@@ -3,7 +3,7 @@ WORKDIR /app
 COPY ./ .
 RUN gradle installDist
 
-FROM amazoncorretto:11 as production-stage
+FROM amazoncorretto:17 as production-stage
 EXPOSE 8080:8080
 RUN mkdir /app
 COPY --from=build-stage /app/build/install/pixina-backend /app

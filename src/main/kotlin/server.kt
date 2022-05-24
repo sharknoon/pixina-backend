@@ -1,10 +1,12 @@
 import api.v1.cart.add
-import io.ktor.application.*
-import io.ktor.features.*
-import io.ktor.routing.*
-import io.ktor.serialization.*
+import api.v1.progress.getProgress
+import api.v1.progress.setProgress
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 
 fun main() {
@@ -12,6 +14,7 @@ fun main() {
         install(ContentNegotiation) {
             json(Json {
                 isLenient = true
+                encodeDefaults = true
             })
         }
 
@@ -20,6 +23,14 @@ fun main() {
                 route("/v1") {
                     post("/cart/{id}/add") {
                         add(this)
+                    }
+                    route("/progress") {
+                        get {
+                            getProgress(this)
+                        }
+                        post {
+                            setProgress(this)
+                        }
                     }
                 }
             }
