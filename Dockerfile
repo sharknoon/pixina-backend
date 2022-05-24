@@ -8,4 +8,5 @@ EXPOSE 8080:8080
 RUN mkdir /app
 COPY --from=build-stage /app/build/install/pixina-backend /app
 WORKDIR /app/bin
+VOLUME /app/bin/data
 CMD ["./pixina-backend"]
