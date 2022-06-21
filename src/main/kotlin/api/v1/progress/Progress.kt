@@ -17,7 +17,7 @@ private val timer = Timer().schedule(object : TimerTask() {
         progressData = readExcelFile() ?: ProgressData()
     }
 
-}, 1000 * 60 * 1)
+}, 1000 * 60 * 5)
 
 suspend fun getProgress(context: PipelineContext<Unit, ApplicationCall>) {
     context.call.respond(HttpStatusCode.OK, progressData)
