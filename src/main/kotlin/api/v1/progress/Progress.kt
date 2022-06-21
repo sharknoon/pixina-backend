@@ -9,15 +9,15 @@ import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.net.URL
 import java.util.*
+import kotlin.concurrent.schedule
 
 private var progressData: ProgressData = readExcelFile() ?: ProgressData()
 
-private val timer = Timer().schedule(object : TimerTask() {
-    override fun run() {
-        progressData = readExcelFile() ?: ProgressData()
-    }
-
-}, 1000 * 60 * 5)
+val timer = Timer().schedule(1000 * 60 * 5) {
+    print("Updating progress from Excel file... ")
+    progressData = readExcelFile() ?: ProgressData()
+    println("Done")
+}
 
 suspend fun getProgress(context: PipelineContext<Unit, ApplicationCall>) {
     context.call.respond(HttpStatusCode.OK, progressData)
