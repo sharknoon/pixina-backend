@@ -8,12 +8,11 @@ import org.apache.poi.openxml4j.opc.OPCPackage
 import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.net.URL
-import java.util.*
-import kotlin.concurrent.schedule
+import kotlin.concurrent.fixedRateTimer
 
-private var progressData: ProgressData = readExcelFile() ?: ProgressData()
+private var progressData: ProgressData = ProgressData()
 
-val timer = Timer().schedule(1000 * 60 * 5) {
+val timer = fixedRateTimer(period = 1000 * 60 * 5) {
     print("Updating progress from Excel file... ")
     progressData = readExcelFile() ?: ProgressData()
     println("Done")
