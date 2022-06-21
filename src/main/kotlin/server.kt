@@ -1,6 +1,6 @@
+
 import api.v1.cart.add
 import api.v1.progress.getProgress
-import api.v1.progress.setProgress
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -34,9 +34,6 @@ fun main() {
                     route("/progress") {
                         get {
                             getProgress(this)
-                        }
-                        post {
-                            setProgress(this)
                         }
                     }
                 }

@@ -2,49 +2,50 @@ package api.v1.progress
 
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.util.pipeline.*
-import kotlinx.serialization.json.Json
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
+import org.apache.poi.openxml4j.opc.OPCPackage
+import org.apache.poi.xssf.usermodel.XSSFSheet
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import java.net.URL
+import java.util.*
 
-private val jsonConfig = Json { encodeDefaults = true }
-private val path: Path = Paths.get("").toAbsolutePath().resolve("data").resolve("progress.json")
+private var progressData: ProgressData = readExcelFile() ?: ProgressData()
 
-private var progressData: ProgressData = load()
+private val timer = Timer().schedule(object : TimerTask() {
+    override fun run() {
+        progressData = readExcelFile() ?: ProgressData()
+    }
+
+}, 1000 * 60 * 1)
 
 suspend fun getProgress(context: PipelineContext<Unit, ApplicationCall>) {
     context.call.respond(HttpStatusCode.OK, progressData)
 }
 
-suspend fun setProgress(context: PipelineContext<Unit, ApplicationCall>) {
-    progressData = try {
-        context.call.receive()
+private fun readExcelFile(): ProgressData? {
+    try {
+        val url =
+            URL("https://onedrive.live.com/download?cid=DE103206033D2FBE&resid=DE103206033D2FBE%21223193&authkey=ADA-Qv-GotvaTp0&em=2")
+        val pkg = OPCPackage.open(url.openStream())
+        val wb = XSSFWorkbook(pkg)
+        val sheet: XSSFSheet = wb.getSheet("Status")
+
+        val finishedRow = sheet.getRow(5)
+        val finished = finishedRow.getCell(1).numericCellValue
+        val inProgressRow = sheet.getRow(4)
+        val inProgress = inProgressRow.getCell(1).numericCellValue
+        val reservedRow = sheet.getRow(3)
+        val reserved = reservedRow.getCell(1).numericCellValue
+
+        return ProgressData(
+            finished.toInt(),
+            inProgress.toInt(),
+            reserved.toInt(),
+            500 - (finished + inProgress + reserved).toInt()
+        )
     } catch (e: Exception) {
-        context.call.respond(HttpStatusCode.BadRequest, "malformed request: $e")
-        return
+        e.printStackTrace()
     }
-
-    save()
-    context.call.respond(HttpStatusCode.OK)
-}
-
-private fun load(): ProgressData {
-    return if (!Files.exists(path)) {
-        val initialProgressData = ProgressData()
-        val json = jsonConfig.encodeToString(ProgressData.serializer(), initialProgressData)
-        Files.createDirectories(path.parent)
-        Files.writeString(path, json)
-        initialProgressData
-    } else {
-        val json = Files.readString(path)
-        jsonConfig.decodeFromString(ProgressData.serializer(), json)
-    }
-}
-
-private fun save() {
-    val json = jsonConfig.encodeToString(ProgressData.serializer(), progressData)
-    Files.writeString(path, json)
+    return null
 }

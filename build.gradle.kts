@@ -4,6 +4,8 @@ val ktor_version: String by project
 val kotlin_version: String by project
 @Suppress("PropertyName")
 val logback_version: String by project
+@Suppress("PropertyName")
+val apache_poi_version: String by project
 
 plugins {
     application
@@ -34,6 +36,8 @@ dependencies {
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-server-cors:$ktor_version")
+    implementation("org.apache.poi:poi:$apache_poi_version")
+    implementation("org.apache.poi:poi-ooxml:$apache_poi_version")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }
