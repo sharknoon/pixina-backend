@@ -9,10 +9,12 @@ import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.net.URL
 import kotlin.concurrent.fixedRateTimer
+import kotlin.system.exitProcess
 
 private var progressData: ProgressData = ProgressData()
 
-val timer = fixedRateTimer(period = 1000 * 60 * 5) {
+val period: Long = System.getenv("PIXINA_EXCEL_POLL_INTERVAL_MS")?.toLongOrNull() ?: (1000 * 60 * 60 * 24)
+val timer = fixedRateTimer(period = period) {
     print("Updating progress from Excel file... ")
     progressData = readExcelFile() ?: ProgressData()
     println("Done")
@@ -24,8 +26,7 @@ suspend fun getProgress(context: PipelineContext<Unit, ApplicationCall>) {
 
 private fun readExcelFile(): ProgressData? {
     try {
-        val url =
-            URL("https://onedrive.live.com/download?cid=DE103206033D2FBE&resid=DE103206033D2FBE%21223193&authkey=ADA-Qv-GotvaTp0&em=2")
+        val url = URL(System.getenv("PIXINA_EXCEL_POLL_URL")) ?: exitProcess(1)
         val pkg = OPCPackage.open(url.openStream())
         val wb = XSSFWorkbook(pkg)
         val sheet: XSSFSheet = wb.getSheet("Status")
