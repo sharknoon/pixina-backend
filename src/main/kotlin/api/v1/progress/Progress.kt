@@ -8,16 +8,19 @@ import org.apache.poi.openxml4j.opc.OPCPackage
 import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.net.URL
+import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.concurrent.fixedRateTimer
 import kotlin.system.exitProcess
 
 private var progressData: ProgressData = ProgressData()
+private var logger = Logger.getLogger("Pixina Backend")
 
 val period: Long = System.getenv("PIXINA_EXCEL_POLL_INTERVAL_MS")?.toLongOrNull() ?: (1000 * 60 * 60 * 24)
+@Suppress("unused")
 val timer = fixedRateTimer(period = period) {
-    print("Updating progress from Excel file... ")
+    logger.info("Updating progress from Excel file")
     progressData = readExcelFile() ?: ProgressData()
-    println("Done")
 }
 
 suspend fun getProgress(context: PipelineContext<Unit, ApplicationCall>) {
@@ -26,7 +29,12 @@ suspend fun getProgress(context: PipelineContext<Unit, ApplicationCall>) {
 
 private fun readExcelFile(): ProgressData? {
     try {
-        val url = URL(System.getenv("PIXINA_EXCEL_POLL_URL")) ?: exitProcess(1)
+        val urlEnv = System.getenv("PIXINA_EXCEL_POLL_URL")
+        if (urlEnv == null) {
+            logger.severe("Environment variable 'PIXINA_EXCEL_POLL_URL' is missing")
+            exitProcess(1)
+        }
+        val url = URL(urlEnv)
         val pkg = OPCPackage.open(url.openStream())
         val wb = XSSFWorkbook(pkg)
         val sheet: XSSFSheet = wb.getSheet("Status")
@@ -45,7 +53,7 @@ private fun readExcelFile(): ProgressData? {
             500 - (finished + inProgress + reserved).toInt()
         )
     } catch (e: Exception) {
-        e.printStackTrace()
+        logger.log(Level.SEVERE, "Error parsing Excel", e)
     }
     return null
 }
