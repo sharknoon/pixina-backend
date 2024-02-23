@@ -4,8 +4,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ProgressData(
-    val finished: Int = 1,
-    val inProgress: Int = 2,
-    val reserved: Int = 3,
-    val available: Int = 4
+    val finished: Set<Int> = setOf(),
+    val inProgress: Set<Int> = setOf(),
+    val reserved: Set<Int> = setOf(),
+    val availableInStock: Set<Int> = setOf(),
+    val availableOutOfStock: Set<Int> = setOf(),
 )
