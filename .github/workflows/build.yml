@@ -1,3 +1,6 @@
+permissions:
+  packages: write
+
 name: Build
 on:
   push:
@@ -8,10 +11,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Login to Github Container Registry
-        run: echo ${{ secrets.GHCR_PAT }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin 
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin 
 
       - name: Build Docker Image
         run: docker build -t ghcr.io/sharknoon/pixina-backend .
@@ -23,23 +26,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Delete untagged Images
-        uses: actions/github-script@v3
+      - name: Delete old image versions
+        uses: actions/delete-package-versions@v5
         with:
-          github-token: ${{ secrets.GHCR_PAT }}
-          script: |
-            const response = await github.request("GET /user/packages/container/${{ env.PACKAGE_NAME }}/versions",
-              { 
-                per_page: ${{ env.PER_PAGE }}
-              }
-            );
-            for(version of response.data) {
-                if (version.metadata.container.tags.length == 0) {
-                    console.log("Deleting " + version.id)
-                    const deleteResponse = await github.request("DELETE /user/packages/container/${{ env.PACKAGE_NAME }}/versions/" + version.id, { });
-                    console.log("Deleted " + deleteResponse.status)
-                }
-            }
-        env:
-          PACKAGE_NAME: pixina-backend
-          PER_PAGE: 100
+          package-type: 'container'
+          package-name: 'pixina-backend'
+          min-versions-to-keep: 1
