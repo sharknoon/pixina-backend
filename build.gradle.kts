@@ -16,7 +16,7 @@ plugins {
 group = "de.sharknoon"
 version = "0.3.0"
 application {
-    mainClass.set("ServerKt")
+    mainClass.set("io.ktor.server.netty.EngineMain")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
