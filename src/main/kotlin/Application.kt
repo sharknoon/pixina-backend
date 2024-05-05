@@ -1,5 +1,7 @@
 import api.v1.cart.add
 import api.v1.progress.getProgress
+import api.v1.umbrelwidgets.getProgressAllWidget
+import api.v1.umbrelwidgets.getProgressWidget
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -33,6 +35,14 @@ fun Application.module() {
                 route("/progress") {
                     get {
                         getProgress(this)
+                    }
+                }
+                route("/umbrelwidgets") {
+                    get("/progress") {
+                        getProgressWidget(this)
+                    }
+                    get("/progress-all") {
+                        getProgressAllWidget(this)
                     }
                 }
             }

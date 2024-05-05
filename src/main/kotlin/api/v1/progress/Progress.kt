@@ -13,7 +13,7 @@ import java.util.logging.Logger
 import kotlin.concurrent.fixedRateTimer
 import kotlin.system.exitProcess
 
-private var progressData: ProgressData = ProgressData()
+var progressData: ProgressData = ProgressData()
 private var logger = Logger.getLogger("Pixina Backend")
 
 val period: Long = System.getenv("PIXINA_EXCEL_POLL_INTERVAL_MS")?.toLongOrNull() ?: (1000 * 60 * 60 * 24)
