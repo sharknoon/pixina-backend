@@ -19,7 +19,7 @@ suspend fun getProgressWidget(context: PipelineContext<Unit, ApplicationCall>) {
 
 suspend fun getProgressAllWidget(context: PipelineContext<Unit, ApplicationCall>) {
     val progressWidgetAll = ProgressWidgetAll(
-        listOf(
+        items = listOf(
             ProgressWidgetAllItem(
                 "Fertig", progressData.finished.size.toString(), "Platten"
             ), ProgressWidgetAllItem(
